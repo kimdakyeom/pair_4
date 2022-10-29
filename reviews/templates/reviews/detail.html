@@ -4,36 +4,20 @@
 
 {% block content %}
 
-  <div class="mt-3">
-    <h3>{{ review.pk }}번 게시글</h3>
-    <p>작성자 :
-      {{ review.user }}</p>
-    <p>제목 :
-      {{ review.title }}</p>
-    <p>
-      <span>
-
-        영화 :
-        {{ review.movie_name }}
-      </span>
-      <span>
-        평점 :
-        {{ review.grade }}
-      </span>
-      <span>분류 :
-        {{ review.category }}</span>
-    </p>
-    <p>내용 :
-      {{ review.content }}</p>
-    <p class="text-end">
-      <span>
-        작성시간 :
-        {{ review.created_at }}
-      </span>
-      <span>
-        | 수정시간 :
-        {{ review.updated_at }}
-      </span>
+  <div class="m-5">
+    <h3 class="fw-bold my-3">{{ review.title }}</h3>
+    <span class="fs-4">{{ review.content }}</span>
+    <span class="float-end">{{ review.user }} | {{ review.updated_at }}</span>
+    <p class="mt-5">
+      {{ review.movie_name }} | 
+      {% for i in ""|ljust:review.grade %}
+        <span>★</span>
+      {% endfor %} |
+    {% if review.category == "2" %}
+        국내영화
+      {% else %}
+        해외영화
+      {% endif %}
     </p>
     <div class="text-center my-4">
       {% if request.user.is_authenticated %}
@@ -51,33 +35,62 @@
       <a href="{% url 'reviews:update' review.pk %}" class="btn btn-outline-success">수정하기</a>
       <a href="{% url 'reviews:delete' review.pk %}" class="btn btn-outline-danger">삭제하기</a>
     </div>
-  </div>
-
-  {% if request.user.is_authenticated %}
-    <div class="mt-3">
-      <form id="comment-form" data-review-id="{{ review.pk }}">
-        {% csrf_token %}
-        <div class=" input-group">
-          {%render_field comment_form.content class+="form-control" rows="1" cols="10"%}
-          <button class="btn btn-outline-primary" type="submit" id="button-addon2">등록</button>
-        </div>
-      </form>
-    </div>
-  {% endif %}
-
-  <div id="comments" class="mt-3">
-    {% for comment in review.comment_set.all %}
-      <div id="comment">
-        <span>
-          {{ comment.user.username }}
-          |
-          {{ comment.content }}</span>
-        <hr>
+    <hr>
+    <h4>댓글</h4>
+    {% if request.user.is_authenticated %}
+      <div class="mt-3">
+        <form id="comment-form" data-review-id="{{ review.pk }}">
+          {% csrf_token %}
+          <div class=" input-group">
+            {%render_field comment_form.content class+="form-control" rows="1" cols="10"%}
+            <button class="btn btn-outline-primary" type="submit" id="button-addon2">등록</button>
+          </div>
+        </form>
       </div>
-      {% empty %}
-      <p>댓글이 없어요 ㅠ_ㅠ</p>
-    {% endfor %}
+    {% endif %}
+  
+    <div id="comments" class="mt-3">
+      {% for comment in review.comment_set.all %}
+        <div id="comment">
+          <span>
+            {{ comment.user.username }}
+            |
+            {{ comment.content }}</span>
+          <hr>
+        </div>
+        {% empty %}
+        <p>댓글이 없어요 ㅠ_ㅠ</p>
+      {% endfor %}
+    </div>
   </div>
+  
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  const commentForm = document.querySelector('#comment-form')
+  const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value
+  commentForm.addEventListener('submit', function(event) {
+
+    event.preventDefault();
+    axios({
+      method: 'post',
+      url: `/reviews/${event.target.dataset.reviewId}/comments/`,
+      headers: {'X-CSRFToken': csrftoken},
+      data: new FormData(commentForm) 
+    })
+
+    .then(response => {
+      const comments = document.querySelector('#comments')
+      const span = document.createElement('span')
+      span.innerText = `${response.data.userName} | ${response.data.content}`
+      const hr = document.createElement('hr')
+      comments.append(span)
+      comments.append(hr)
+      commentForm.reset()
+    })
+  })
+</script>
+
 
 {% endblock %}

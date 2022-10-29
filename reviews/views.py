@@ -3,7 +3,7 @@ from .models import Review, Comment
 from .forms import CommentForm, ReviewForm
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-import json
+from django.contrib.auth import get_user_model
 
 
 def index(request):
@@ -100,14 +100,17 @@ def category(request, val):
         reviews = Review.objects.filter(category=val)
     relist = []
     for r in reviews:
+        user = get_user_model().objects.get(pk=r.user_id)
         relist.append(
             {
+                "user": user.username,
                 "pk": r.pk,
                 "title": r.title,
                 "content": r.content,
                 "movie_name": r.movie_name,
                 "grade": r.grade,
                 "created_at": r.created_at,
+                "updated_at": r.updated_at,
                 "category": r.category,
             }
         )
