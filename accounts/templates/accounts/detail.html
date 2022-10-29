@@ -2,12 +2,12 @@
 {% load bootstrap5 %}
 
 {% block content %}
-  <div>
-    <div class="d-flex">
+  <div class="m-5 text-center">
+    <div class="d-flex justify-content-center align-items-center">
       {% if user.profile_image %}
-        <img src="{{ user.profile_image.url }}" alt="">
+        <img src="{{ user.profile_image.url }}" class="rounded-circle">
       {% endif %}
-      <h1>{{ user.username }}님의 프로필</h1>
+      <h1 class="ms-2">{{ user.username }}님의 프로필</h1>
       {% if user.full_name and user.email %}
         <p>{{ user.full_name }}
           |
@@ -15,7 +15,7 @@
         </p>
       {% endif %}
     </div>
-    <div class="d-flex">
+    <div class="d-flex justify-content-center my-3">
       <div class="text-center me-3">
         <p>팔로워</p>
         <span id="followers-count">{{ user.followers.all|length }}</span>
@@ -24,19 +24,18 @@
         <p>팔로잉</p>
         <span id="followings-count">{{ user.followings.all|length }}</span>
       </div>
-      <div class="ms-3 mt-3">
-        {% if request.user != user %}
-          <form id="follow-form" data-user-id="{{ user.pk }}">
-            {% csrf_token %}
-            {% if request.user in user.followers.all %}
-              <input type="submit" value="unfollow" class="btn btn-outline-dark">
-            {% else %}
-              <input type="submit" value="follow" class="btn btn-dark">
-            {% endif %}
-          </form>
-        {% endif %}
-      </div>
-
+    </div>
+    <div class="ms-3 mt-3">
+      {% if request.user != user %}
+        <form id="follow-form" data-user-id="{{ user.pk }}">
+          {% csrf_token %}
+          {% if request.user in user.followers.all %}
+            <input type="submit" value="unfollow" class="btn btn-outline-dark">
+          {% else %}
+            <input type="submit" value="follow" class="btn btn-dark">
+          {% endif %}
+        </form>
+      {% endif %}
     </div>
     {% if request.user == user %}
       <div class="mt-3">
@@ -45,37 +44,33 @@
         <a href="{% url 'accounts:delete' %}" class='btn btn-outline-secondary'>탈퇴</a>
       </div>
     {% endif %}
-  </div>
-
-  <div class="d-flex justify-content-between mt-5">
-    <div>
-      <h4>작성한 글</h4>
-      <p>게시글 :
-        {{user.review_set.count}}
-        개</p>
-      {% for review in user.review_set.all %}
-        <p>{{ forloop.counter}}
-          <a href="{% url 'reviews:detail' review.pk %}">{{review.title}}</a>
-        </p>
-      {% endfor %}
-    </div>
-    <div>
-      <h4>작성한 댓글</h4>
-      <p>
-        {{user.comment_set.count}}
-        개
-
-      </p>
-      <p></p>
-    </div>
-    <div>
-      <h4>좋아요한 글</h4>
-      <p>
-        {{user.like_reviews.count}}
-        개
-      </p>
-      <p></p>
+    <div class="d-flex justify-content-between m-5">
+      <div>
+        <h4>작성한 글</h4>
+        {% for review in user.review_set.all %}
+        <a href="{% url 'reviews:detail' review.pk %}">
+          <p>{{ forloop.counter}} | {{review.title}}</p>
+        </a>
+        {% endfor %}
+      </div>
+      <div>
+        <h4>작성한 댓글</h4>
+        {% for comment in user.comment_set.all %}
+        <a href="{% url 'reviews:detail' comment.review_id %}">
+          <p>{{ forloop.counter}} | {{comment.content}}</p>
+        </a>
+        {% endfor %}
+      </div>
+      <div>
+        <h4>좋아요한 글</h4>
+        {% for review in user.like_reviews.all %}
+          <a href="{% url 'reviews:detail' review.pk %}">
+            <p>{{ forloop.counter}} | {{review.title}}</p>
+          </a>
+          {% endfor %}
+      </div>
     </div>
   </div>
+
 
 {% endblock content %}
